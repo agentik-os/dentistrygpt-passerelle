@@ -1,5 +1,5 @@
 import path from 'path'
-import { execFile } from 'child_process'
+import { exec, execFile } from 'child_process'
 import { clipboard } from 'electron'
 import { checkPathExists } from '../files'
 
@@ -45,15 +45,58 @@ export function getLogosConfiguration(): LogosDetectionResult {
 }
 
 /**
+ * Simulate keyboard input using PowerShell (Windows) or AppleScript (macOS).
+ * Replaces robotjs native module — pure JS, no compilation needed.
+ */
+function simulateKeyboardInput(text: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (process.platform === 'win32') {
+      // PowerShell: set clipboard + Ctrl+V + Enter
+      const psScript = `
+Add-Type -AssemblyName System.Windows.Forms
+[System.Windows.Forms.Clipboard]::SetText("${text.replace(/"/g, '`"')}")
+Start-Sleep -Milliseconds 300
+[System.Windows.Forms.SendKeys]::SendWait("^v")
+Start-Sleep -Milliseconds 500
+[System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
+`.trim()
+      exec(`powershell -NoProfile -Command "${psScript.replace(/"/g, '\\"')}"`, (error) => {
+        if (error) reject(error)
+        else resolve()
+      })
+    } else if (process.platform === 'darwin') {
+      // AppleScript: keystroke the text + return
+      const script = `
+tell application "System Events"
+  keystroke "${text.replace(/"/g, '\\"')}"
+  delay 0.5
+  keystroke return
+end tell
+`.trim()
+      exec(`osascript -e '${script.replace(/'/g, "'\\''")}'`, (error) => {
+        if (error) reject(error)
+        else resolve()
+      })
+    } else {
+      // Linux: use xdotool if available
+      exec(`xdotool type --clearmodifiers "${text}" && xdotool key Return`, (error) => {
+        if (error) reject(error)
+        else resolve()
+      })
+    }
+  })
+}
+
+/**
  * Launch ANXAGENT.EXE to import a document into LogosW.
  *
  * ANXAGENT.EXE is the LogosW document import agent. It:
  * 1. Opens a dialog asking for the patient ID
  * 2. Imports the file into the patient's LIENS folder
  *
- * We automate this with robotjs:
+ * Automation via PowerShell/AppleScript (no native modules):
  * - Launch ANXAGENT.EXE with the file path
- * - Use clipboard to paste the patientId
+ * - Use clipboard + SendKeys to paste the patientId
  * - Press Enter to confirm
  */
 export function launchAnxagent(
@@ -61,16 +104,6 @@ export function launchAnxagent(
   patientId: string
 ): Promise<{ success: boolean; error?: string }> {
   return new Promise((resolve) => {
-    // Dynamic import robotjs (native module, may not be available)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let robot: { keyTap: (key: string, modifier?: string[]) => void }
-    try {
-      robot = require('robotjs') as typeof robot
-    } catch {
-      resolve({ success: false, error: 'robotjs non disponible — installation native requise' })
-      return
-    }
-
     // Launch ANXAGENT.EXE with the PDF path as argument
     const child = execFile(ANXAGENT_EXE, [filePath], (error) => {
       if (error) {
@@ -79,23 +112,18 @@ export function launchAnxagent(
     })
 
     // Wait for the ANXAGENT dialog to appear, then paste patientId
-    setTimeout(() => {
+    setTimeout(async () => {
       try {
-        // Copy patientId to clipboard
+        // Copy patientId to clipboard (Electron API)
         clipboard.writeText(patientId)
 
-        // Simulate Ctrl+V to paste
-        robot.keyTap('v', ['control'])
+        // Simulate keyboard: paste + Enter via OS-native approach
+        await simulateKeyboardInput(patientId)
 
-        // Wait a beat, then press Enter to confirm
+        // Give ANXAGENT time to process, then resolve
         setTimeout(() => {
-          robot.keyTap('enter')
-
-          // Give ANXAGENT time to process, then resolve
-          setTimeout(() => {
-            resolve({ success: true })
-          }, 2000)
-        }, 500)
+          resolve({ success: true })
+        }, 2000)
       } catch (err) {
         resolve({ success: false, error: `Erreur RPA: ${(err as Error).message}` })
       }

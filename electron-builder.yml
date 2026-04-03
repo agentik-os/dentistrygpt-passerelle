@@ -2,6 +2,11 @@ appId: com.dentistrygpt.passerelle
 productName: DentistryGPT Passerelle
 copyright: Copyright © 2026 DentistryGPT
 
+protocols:
+  - name: DentistryGPT Passerelle
+    schemes:
+      - dentistrygpt-passerelle
+
 directories:
   output: release
   buildResources: resources
@@ -15,6 +20,8 @@ mac:
     - dmg
     - zip
   artifactName: ${productName}-${version}-${arch}.${ext}
+  entitlements: resources/entitlements.mac.plist
+  entitlementsInherit: resources/entitlements.mac.plist
 
 win:
   target:
@@ -24,6 +31,8 @@ win:
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
+  perMachine: false
+  include: resources/installer.nsh
 
 linux:
   target:
