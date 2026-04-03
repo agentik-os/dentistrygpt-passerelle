@@ -9,7 +9,7 @@ import {
 } from '../../utils/auth'
 
 const PROTOCOL = 'dentistrygpt-passerelle'
-const LOGIN_URL = 'https://www.dentistrygpt.com/sign-in?redirect_url=/api/passerelle/auth/callback'
+const LOGIN_URL = 'https://www.dentistrygpt.com/dashboard/passerelle-auth'
 
 // Deep link handler — resolves when a token is received via protocol
 let pendingAuthResolve: ((token: string) => void) | null = null
