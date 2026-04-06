@@ -13,7 +13,11 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [windows-latest, macos-latest]
+        include:
+          - os: windows-latest
+            sign: false
+          - os: macos-latest
+            sign: true
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -29,10 +33,47 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      # macOS: Import Apple certificate for code signing
+      - name: Import Apple certificate
+        if: matrix.sign
+        env:
+          APPLE_CERTIFICATE_BASE64: ${{ secrets.APPLE_CERTIFICATE_BASE64 }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+        run: |
+          # Create temporary keychain
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          KEYCHAIN_PASSWORD=$(openssl rand -base64 32)
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+          # Import certificate
+          echo "$APPLE_CERTIFICATE_BASE64" | base64 --decode > $RUNNER_TEMP/certificate.p12
+          security import $RUNNER_TEMP/certificate.p12 \
+            -P "$APPLE_CERTIFICATE_PASSWORD" \
+            -A -t cert -f pkcs12 \
+            -k "$KEYCHAIN_PATH"
+
+          # Allow codesign to access keychain
+          security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security list-keychain -d user -s "$KEYCHAIN_PATH"
+
+          # Verify
+          security find-identity -v -p codesigning "$KEYCHAIN_PATH"
+
+      # Build Electron app (with signing on macOS)
       - name: Build Electron app
         run: npm run dist
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # macOS signing
+          CSC_LINK: ${{ matrix.sign && secrets.APPLE_CERTIFICATE_BASE64 || '' }}
+          CSC_KEY_PASSWORD: ${{ matrix.sign && secrets.APPLE_CERTIFICATE_PASSWORD || '' }}
+          # macOS notarization
+          APPLE_ID: ${{ matrix.sign && secrets.APPLE_ID || '' }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ matrix.sign && secrets.APPLE_APP_SPECIFIC_PASSWORD || '' }}
+          APPLE_TEAM_ID: ${{ matrix.sign && secrets.APPLE_TEAM_ID || '' }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -43,6 +84,8 @@ jobs:
             release/*.dmg
             release/*.zip
             release/*.AppImage
+            release/*.blockmap
+            release/*.yml
           if-no-files-found: warn
 
   release:
