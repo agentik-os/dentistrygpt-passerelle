@@ -15,6 +15,19 @@ const softwareOptions = [
   { id: "sidexis", name: "Sidexis (Dentsply Sirona)", description: "Imagerie et gestion Dentsply Sirona" },
   { id: "ax", name: "Ax Santé", description: "Solution de gestion pour professionnels de santé" },
   { id: "axisante", name: "Axisanté", description: "Logiciel de gestion de cabinet médical et dentaire" },
+  { id: "dental-master", name: "Dental Master", description: "Logiciel de gestion et imagerie pour cabinets dentaires" },
+  { id: "dovetail", name: "Dovetail", description: "Solution de gestion de cabinet dentaire" },
+  { id: "cabinet-vision", name: "Cabinet Vision", description: "Logiciel de gestion et organisation de cabinet" },
+  { id: "mediagest", name: "Mediagest", description: "Solution de gestion et télétransmission dentaire" },
+  { id: "dentagest", name: "DentaGest", description: "Logiciel de gestion de cabinet dentaire" },
+  { id: "sterildent", name: "SterilDent", description: "Traçabilité et stérilisation pour cabinets dentaires" },
+  { id: "crossway", name: "Crossway", description: "Logiciel de gestion de cabinet médical et dentaire" },
+  { id: "hellodent", name: "HelloDent", description: "Logiciel cloud de gestion de cabinet dentaire" },
+  { id: "opta-s", name: "Opta-S", description: "Solution de gestion pour cabinets dentaires" },
+  { id: "clinident", name: "Clinident", description: "Logiciel de gestion pour centres dentaires et cabinets" },
+  { id: "atal", name: "Atal", description: "Solution de gestion et comptabilité pour cabinets dentaires" },
+  { id: "dentally", name: "Dentally", description: "Logiciel cloud de gestion de cabinet dentaire" },
+  { id: "identist", name: "IDentist", description: "Solution de gestion et imagerie dentaire intégrée" },
   { id: "other", name: "Autre", description: "Logiciel non listé ci-dessus" },
 ];
 
@@ -98,6 +111,58 @@ const setupInstructions: Record<string, string[]> = {
     "Notez le chemin du dossier documents patients.",
     "Configurez ce chemin dans les Paramètres de la Passerelle.",
     "Les rapports seront déposés automatiquement.",
+  ],
+  "dental-master": [
+    "Configurez le chemin du dossier DOCPATIENT dans les Paramètres de la Passerelle.",
+    "Les rapports seront déposés automatiquement dans le dossier du patient correspondant.",
+  ],
+  dovetail: [
+    "Configurez le chemin du dossier DOCPATIENT dans les Paramètres de la Passerelle.",
+    "Les rapports seront déposés automatiquement dans le dossier du patient correspondant.",
+  ],
+  "cabinet-vision": [
+    "Configurez le chemin du dossier DOCPATIENT dans les Paramètres de la Passerelle.",
+    "Les rapports seront déposés automatiquement dans le dossier du patient correspondant.",
+  ],
+  mediagest: [
+    "Configurez le chemin du dossier DOCPATIENT dans les Paramètres de la Passerelle.",
+    "Les rapports seront déposés automatiquement dans le dossier du patient correspondant.",
+  ],
+  dentagest: [
+    "Configurez le chemin du dossier DOCPATIENT dans les Paramètres de la Passerelle.",
+    "Les rapports seront déposés automatiquement dans le dossier du patient correspondant.",
+  ],
+  sterildent: [
+    "Configurez le chemin du dossier DOCPATIENT dans les Paramètres de la Passerelle.",
+    "Les rapports seront déposés automatiquement dans le dossier du patient correspondant.",
+  ],
+  crossway: [
+    "Configurez le chemin du dossier DOCPATIENT dans les Paramètres de la Passerelle.",
+    "Les rapports seront déposés automatiquement dans le dossier du patient correspondant.",
+  ],
+  hellodent: [
+    "Configurez le chemin du dossier DOCPATIENT dans les Paramètres de la Passerelle.",
+    "Les rapports seront déposés automatiquement dans le dossier du patient correspondant.",
+  ],
+  "opta-s": [
+    "Configurez le chemin du dossier DOCPATIENT dans les Paramètres de la Passerelle.",
+    "Les rapports seront déposés automatiquement dans le dossier du patient correspondant.",
+  ],
+  clinident: [
+    "Configurez le chemin du dossier DOCPATIENT dans les Paramètres de la Passerelle.",
+    "Les rapports seront déposés automatiquement dans le dossier du patient correspondant.",
+  ],
+  atal: [
+    "Configurez le chemin du dossier DOCPATIENT dans les Paramètres de la Passerelle.",
+    "Les rapports seront déposés automatiquement dans le dossier du patient correspondant.",
+  ],
+  dentally: [
+    "Configurez le chemin du dossier DOCPATIENT dans les Paramètres de la Passerelle.",
+    "Les rapports seront déposés automatiquement dans le dossier du patient correspondant.",
+  ],
+  identist: [
+    "Configurez le chemin du dossier DOCPATIENT dans les Paramètres de la Passerelle.",
+    "Les rapports seront déposés automatiquement dans le dossier du patient correspondant.",
   ],
   other: [
     "Allez dans Paramètres pour définir le chemin du dossier où déposer les documents.",
