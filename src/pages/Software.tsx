@@ -94,6 +94,23 @@ export function Software() {
         </div>
       )}
 
+      {/* Setup instructions per software */}
+      {selected && (
+        <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
+          <p className="text-sm font-medium text-slate-700 mb-2">Instructions de configuration</p>
+          <p className="text-xs text-slate-600 leading-relaxed">
+            {selected === "julie" &&
+              "Vérifiez que le dossier DOCPATIENT est accessible sur votre réseau (ex : \\\\SERVEUR\\Juliew\\DOCPATIENT). La Passerelle y déposera automatiquement les rapports."}
+            {selected === "logosw" &&
+              "Vérifiez que LogosW est installé et que ANXAGENT.EXE est présent dans c:\\wlogos1\\. La Passerelle utilisera LogosW pour importer les documents automatiquement."}
+            {(selected === "visiodent" || selected === "desmos" || selected === "orthalis" || selected === "kitview") &&
+              "Configurez le chemin du dossier DOCPATIENT dans les Paramètres. La Passerelle déposera les rapports dans ce dossier."}
+            {selected === "other" &&
+              "Allez dans Paramètres pour définir le chemin du dossier où déposer les documents."}
+          </p>
+        </div>
+      )}
+
       <div className="mt-6 flex items-center gap-3">
         <button
           onClick={handleSave}

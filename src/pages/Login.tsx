@@ -101,6 +101,17 @@ export function Login({ onLogin }: LoginProps) {
               </button>
             </form>
           </div>
+
+          {/* Login flow helper */}
+          <div className="mt-4 rounded-lg bg-slate-50 p-3">
+            <p className="text-xs text-slate-500 leading-relaxed">
+              <span className="font-medium text-slate-600">Comment se connecter :</span><br />
+              1. Cliquez sur <strong>Se connecter</strong> — votre navigateur s&apos;ouvre sur DentistryGPT.<br />
+              2. Connectez-vous avec votre compte Google habituel.<br />
+              3. Copiez le code d&apos;autorisation affich&eacute;.<br />
+              4. Collez-le ici et cliquez <strong>Valider</strong>.
+            </p>
+          </div>
         </div>
 
         {/* Footer */}
