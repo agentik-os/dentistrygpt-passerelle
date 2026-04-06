@@ -67,13 +67,9 @@ jobs:
         run: npm run dist
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # macOS signing
+          # macOS signing only (no notarization — removes APPLE_ID env vars to prevent electron-builder auto-notarize)
           CSC_LINK: ${{ matrix.sign && secrets.APPLE_CERTIFICATE_BASE64 || '' }}
           CSC_KEY_PASSWORD: ${{ matrix.sign && secrets.APPLE_CERTIFICATE_PASSWORD || '' }}
-          # macOS notarization
-          APPLE_ID: ${{ matrix.sign && secrets.APPLE_ID || '' }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ matrix.sign && secrets.APPLE_APP_SPECIFIC_PASSWORD || '' }}
-          APPLE_TEAM_ID: ${{ matrix.sign && secrets.APPLE_TEAM_ID || '' }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
