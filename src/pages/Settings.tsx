@@ -1,29 +1,33 @@
 import { useState, useEffect } from "react";
 
 export function Settings() {
-  const [docPath, setDocPath] = useState("");
-  const [customDocPatientPath, setCustomDocPatientPath] = useState("");
   const [microphone, setMicrophone] = useState("");
   const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [autoStart, setAutoStart] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [version] = useState("1.0.0");
+  const [version] = useState("1.1.0");
   const [cabinetName, setCabinetName] = useState("");
   const [microphones, setMicrophones] = useState<{ id: string; label: string }[]>([]);
+  const [configuredSoftware, setConfiguredSoftware] = useState(0);
 
   useEffect(() => {
     // Load saved settings
     Promise.all([
-      window.electronAPI?.store.get("doc_patient_path"),
-      window.electronAPI?.store.get("software.customDocPatientPath"),
       window.electronAPI?.store.get("microphone"),
       window.electronAPI?.store.get("theme"),
       window.electronAPI?.store.get("cabinet_name"),
-    ]).then(([path, customPath, mic, th, cabinet]) => {
-      if (path) setDocPath(path as string);
-      if (customPath) setCustomDocPatientPath(customPath as string);
+      window.electronAPI?.store.get("auto_start"),
+      window.electronAPI?.store.get("software_configs"),
+    ]).then(([mic, th, cabinet, autoStartVal, swConfigs]) => {
       if (mic) setMicrophone(mic as string);
       if (th) setTheme(th as "light" | "dark");
       if (cabinet) setCabinetName(cabinet as string);
+      if (autoStartVal) setAutoStart(autoStartVal as boolean);
+      if (swConfigs && typeof swConfigs === "object") {
+        const count = Object.values(swConfigs as Record<string, { enabled?: boolean }>)
+          .filter((c) => c.enabled).length;
+        setConfiguredSoftware(count);
+      }
     });
 
     // List available microphones
@@ -35,17 +39,11 @@ export function Settings() {
     });
   }, []);
 
-  const handleBrowse = async () => {
-    const path = await window.electronAPI?.openDirectory();
-    if (path) setDocPath(path);
-  };
-
   async function handleSave() {
     await Promise.all([
-      window.electronAPI?.store.set("doc_patient_path", docPath),
-      window.electronAPI?.store.set("software.customDocPatientPath", customDocPatientPath),
       window.electronAPI?.store.set("microphone", microphone),
       window.electronAPI?.store.set("theme", theme),
+      window.electronAPI?.store.set("auto_start", autoStart),
     ]);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
@@ -54,52 +52,14 @@ export function Settings() {
   return (
     <div className="mx-auto max-w-2xl">
       <h1 className="text-xl font-semibold text-slate-900">Parametres</h1>
-      <p className="mt-1 text-sm text-slate-500">Configuration de la passerelle</p>
+      <p className="mt-1 text-sm text-slate-500">Parametres generaux de l&apos;application</p>
 
       <div className="mt-6 space-y-6">
-        {/* DOCPATIENT folder */}
-        <section className="rounded-xl border border-slate-200 bg-white p-5">
-          <h2 className="text-sm font-semibold text-slate-900">Dossier DOCPATIENT</h2>
-          <p className="mt-1 text-xs text-slate-500">
-            Chemin vers le dossier contenant les documents patients
-          </p>
-          <div className="mt-3 flex gap-2">
-            <input
-              type="text"
-              value={docPath}
-              onChange={(e) => setDocPath(e.target.value)}
-              className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-[#c96442] focus:ring-2 focus:ring-[#c96442]/20"
-              placeholder="C:\DOCPATIENT"
-            />
-            <button
-              onClick={handleBrowse}
-              className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
-            >
-              Parcourir
-            </button>
-          </div>
-        </section>
-
-        {/* Custom DOCPATIENT path */}
-        <section className="rounded-xl border border-slate-200 bg-white p-5">
-          <h2 className="text-sm font-semibold text-slate-900">Chemin DOCPATIENT personnalise</h2>
-          <p className="mt-1 text-xs text-slate-500">
-            Chemin personnalise pour exporter les documents patients (remplace le chemin par defaut du logiciel dentaire)
-          </p>
-          <input
-            type="text"
-            value={customDocPatientPath}
-            onChange={(e) => setCustomDocPatientPath(e.target.value)}
-            className="mt-3 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-[#c96442] focus:ring-2 focus:ring-[#c96442]/20"
-            placeholder="Ex: D:\DOCPATIENT ou \\serveur\DOCPATIENT (laisser vide pour utiliser le chemin par defaut)"
-          />
-        </section>
-
         {/* Microphone */}
         <section className="rounded-xl border border-slate-200 bg-white p-5">
           <h2 className="text-sm font-semibold text-slate-900">Microphone</h2>
           <p className="mt-1 text-xs text-slate-500">
-            Peripherique d'entree audio pour la dictee vocale
+            Peripherique d&apos;entree audio pour la dictee vocale
           </p>
           <select
             value={microphone}
@@ -118,7 +78,7 @@ export function Settings() {
         {/* Theme */}
         <section className="rounded-xl border border-slate-200 bg-white p-5">
           <h2 className="text-sm font-semibold text-slate-900">Theme</h2>
-          <p className="mt-1 text-xs text-slate-500">Apparence de l'application</p>
+          <p className="mt-1 text-xs text-slate-500">Apparence de l&apos;application</p>
           <div className="mt-3 flex gap-3">
             <button
               onClick={() => setTheme("light")}
@@ -143,6 +103,30 @@ export function Settings() {
           </div>
         </section>
 
+        {/* Auto-start */}
+        <section className="rounded-xl border border-slate-200 bg-white p-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-semibold text-slate-900">Demarrage automatique</h2>
+              <p className="mt-1 text-xs text-slate-500">
+                Lancer la Passerelle au demarrage de Windows/macOS
+              </p>
+            </div>
+            <button
+              onClick={() => setAutoStart(!autoStart)}
+              className={`relative h-6 w-11 rounded-full transition-colors ${
+                autoStart ? "bg-[#c96442]" : "bg-slate-300"
+              }`}
+            >
+              <span
+                className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                  autoStart ? "translate-x-5" : "translate-x-0.5"
+                }`}
+              />
+            </button>
+          </div>
+        </section>
+
         {/* About */}
         <section className="rounded-xl border border-slate-200 bg-white p-5">
           <h2 className="text-sm font-semibold text-slate-900">A propos</h2>
@@ -154,6 +138,10 @@ export function Settings() {
             <div className="flex justify-between">
               <span className="text-slate-500">Cabinet</span>
               <span className="font-medium text-slate-900">{cabinetName || "Non configure"}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">Logiciels configures</span>
+              <span className="font-medium text-slate-900">{configuredSoftware}</span>
             </div>
           </div>
         </section>

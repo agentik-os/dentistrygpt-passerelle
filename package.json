@@ -1,6 +1,6 @@
 {
   "name": "dentistrygpt-passerelle",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "DentistryGPT Passerelle - Synchronisation des rapports dentaires",
   "main": "dist-electron/main/index.js",
   "scripts": {
